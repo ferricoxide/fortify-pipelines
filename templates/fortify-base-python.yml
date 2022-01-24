@@ -1,0 +1,118 @@
+---
+variables:
+  OUTPUT_ROOT: "fortify-scan-results"
+  OUTPUT_CSV: "${OUTPUT_ROOT}.csv"
+  OUTPUT_FPR: "${OUTPUT_ROOT}.fpr"
+  OUTPUT_PDF: "${OUTPUT_ROOT}.pdf"
+  OUTPUT_XLS: "${OUTPUT_ROOT}.xls"
+
+fortify_prep:
+  image: ${CONTAINER_REGISTRY}/${CONTAINER_SCA}
+  needs: []
+  stage: code_sec_scan
+  script:
+    - |-
+      #!/bin/bash
+      set -euo pipefail
+      PATH="/usr/local/bin:${PATH}:/opt/Fortify/bin"
+      SCAN_ARGS="${FORTIFY_SCAN_ARGS:-}"
+      SCAN_PATH="${FORTIFY_SCAN_PATH:-./**/*}"
+
+      # Capture analyzer version info
+      echo "Getting analyzer versions-info... "
+      sourceanalyzer -64 -version 2>&1 > >(
+        tee -a sourceanalyzer-version.log
+      ) 2> >(
+        tee -a sourceanalyzer-version.err >&2
+      ) || ( echo FAILED ; exit 1 )
+
+      # Capture installed Fortify rule-sets
+      echo "Showing installed rules... "
+      fortifyupdate -showInstalledRules > >(
+        tee -a FortifyRules.log
+      ) 2> >(
+        tee -a FortifyRules.err >&2
+      ) || ( echo FAILED ; exit 1 )
+
+      # Initialize the source analyzer and scan
+      echo "Ensure build-env is clean... "
+      sourceanalyzer -64 -b ${CI_COMMIT_REF_SLUG} -clean
+
+      echo "Translate source to scannable content"
+      sourceanalyzer --verbose -64 -b "${CI_COMMIT_REF_SLUG}" \
+        ${SCAN_ARGS} ${SCAN_PATH}
+
+      echo "Explicitly-display build-warnings... "
+      sourceanalyzer --verbose -64 -b "${CI_COMMIT_REF_SLUG}" \
+        -show-build-warnings
+
+      echo "Show files to be scanned... "
+      sourceanalyzer --verbose -64 -b "${CI_COMMIT_REF_SLUG}" -show-files
+
+      echo "Create ${OUTPUT_FPR} file... "
+      sourceanalyzer -64 -b "${CI_COMMIT_REF_SLUG}" -scan \
+        -output-file "${OUTPUT_FPR}" -debug -logfile sca.log \
+        -verbose
+  artifacts:
+    # Enable download of container scanning report
+    paths:
+      - ${OUTPUT_FPR}
+      - sca.log
+      - FortifyRules.log
+      - FortifyRules.err
+      - sourceanalyzer-version.log
+    expire_in: 1 week
+  allow_failure: false
+
+fortify_push2ssc:
+  image: ${CONTAINER_REGISTRY}/${CONTAINER_SCA}
+  needs:
+    - job: fortify_prep
+      artifacts: true
+  stage: code_sec_scan
+  script:
+    - |-
+      #!/bin/bash
+      set -euo pipefail
+      set -x
+      PATH="/usr/local/bin:${PATH}:/opt/Fortify/bin"
+
+      echo "Print out project-files"
+      find . -type f -print0 | xargs -0 ls -lrtd
+      printf '=====\n=====\n=====\n\n'
+
+      fortifyclient -url "${SSC_URL}" -authtoken "${SSC_AUTH_TOKEN}" \
+        uploadFPR -file "${OUTPUT_FPR}" -project "${SSC_APP_NAME}" \
+        -version "0.1"
+  artifacts:
+    # Enable download of container scanning report
+    paths:
+      - ${OUTPUT_FPR}
+    expire_in: 1 week
+  allow_failure: false
+
+fortify_ssc-export:
+  image: ${CONTAINER_REGISTRY}/${CONTAINER_EXPORTER}
+  needs:
+    - job: fortify_push2ssc
+      artifacts: false
+  stage: code_sec_scan
+  variables:
+    export_config: /config/SSCToGitLab.yml
+    ssc_baseUrl: "${SSC_URL}"
+    ssc_authToken: "${SSC_AUTH_TOKEN}"
+    ssc_version_name: "${SSC_APP_NAME}:${SSC_APP_VERSION}"
+  when: manual
+  script:
+    - echo "Script not executed but required for CI-def to pass lint"
+  allow_failure: true
+  artifacts:
+    paths:
+      - gl-fortify-sast.json
+      - gl-fortify-dast.json
+      - gl-fortify-depscan.json
+    reports:
+      sast: gl-fortify-sast.json
+      dast: gl-fortify-dast.json
+      dependency_scanning: gl-fortify-depscan.json
+...
