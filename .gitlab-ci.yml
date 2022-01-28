@@ -5,21 +5,19 @@ default:
 variables:
   GIT_STRATEGY: clone
 
-stages:
-  - info
-  - lint
-
 # Generic "fetch the environment" task to facilitate future
 # debugging activities
 get-vars:
-  stage: info
+  needs: []
+  stage: .pre
   script:
     - export
 
 # Lint any YAML-based content to ensure we don't pollute the project
 # any time we add or update YAML-based content
 lint-yaml:
-  stage: lint
+  needs:
+    - get-vars
   before_script:
     - bash scripts/ci-setup/install_py3.sh
     - bash scripts/ci-setup/install_pymod.sh yamllint
@@ -29,7 +27,8 @@ lint-yaml:
 # Lint any shell-based content to ensure we don't pollute the projct
 # any time we add or update shell-based content
 lint-shell:
-  stage: lint
+  needs:
+    - get-vars
   before_script:
     - bash scripts/ci-setup/install_py3.sh
     - bash scripts/ci-setup/install_pymod.sh shellcheck-py

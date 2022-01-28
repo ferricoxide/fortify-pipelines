@@ -1,0 +1,56 @@
+---
+include:
+  - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
+    ref: 'SecondaryPipelines'
+    file: 'templates/fortify-prep.yml'
+
+fortify_push2ssc:
+  image: ${CONTAINER_REGISTRY}/${CONTAINER_SCA}
+  needs:
+    - job: fortify_prep
+      artifacts: true
+  script:
+    - |-
+      #!/bin/bash
+      set -euo pipefail
+      set -x
+      PATH="/usr/local/bin:${PATH}:/opt/Fortify/bin"
+
+      echo "Print out project-files"
+      find . -type f -print0 | xargs -0 ls -lrtd
+      printf '=====\n=====\n=====\n\n'
+
+      fortifyclient -url "${SSC_URL}" -authtoken "${SSC_AUTH_TOKEN}" \
+        uploadFPR -file "${OUTPUT_FPR}" -project "${SSC_APP_NAME}" \
+        -version "0.1"
+  artifacts:
+    # Enable download of container scanning report
+    paths:
+      - ${OUTPUT_FPR}
+    expire_in: 1 week
+  allow_failure: false
+
+fortify_ssc-export:
+  image: ${CONTAINER_REGISTRY}/${CONTAINER_EXPORTER}
+  needs:
+    - job: fortify_push2ssc
+      artifacts: false
+  variables:
+    export_config: /config/SSCToGitLab.yml
+    ssc_baseUrl: "${SSC_URL}"
+    ssc_authToken: "${SSC_AUTH_TOKEN}"
+    ssc_version_name: "${SSC_APP_NAME}:${SSC_APP_VERSION}"
+  when: manual
+  script:
+    - echo "Script not executed but required for CI-def to pass lint"
+  allow_failure: true
+  artifacts:
+    paths:
+      - gl-fortify-sast.json
+      - gl-fortify-dast.json
+      - gl-fortify-depscan.json
+    reports:
+      sast: gl-fortify-sast.json
+      dast: gl-fortify-dast.json
+      dependency_scanning: gl-fortify-depscan.json
+...
