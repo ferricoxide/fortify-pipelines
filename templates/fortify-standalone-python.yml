@@ -9,7 +9,7 @@ variables:
 
 include:
   - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
-    ref: 'SecondaryPipelines'
+    ref: 'main'
     file: 'templates/fortify-prep.yml'
 
 fortify_report-pdf:
