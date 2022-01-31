@@ -22,7 +22,7 @@ fortify_push2ssc:
 
       fortifyclient -url "${SSC_URL}" -authtoken "${SSC_AUTH_TOKEN}" \
         uploadFPR -file "${OUTPUT_FPR}" -project "${SSC_APP_NAME}" \
-        -version "0.1"
+        -version "${SSC_APP_VERSION}"
   artifacts:
     # Enable download of container scanning report
     paths:
@@ -40,7 +40,6 @@ fortify_ssc-export:
     ssc_baseUrl: "${SSC_URL}"
     ssc_authToken: "${SSC_AUTH_TOKEN}"
     ssc_version_name: "${SSC_APP_NAME}:${SSC_APP_VERSION}"
-  when: manual
   script:
     - echo "Script not executed but required for CI-def to pass lint"
   allow_failure: true
