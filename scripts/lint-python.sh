@@ -18,7 +18,7 @@ readarray -t FOUND_FILES < <(
 # Check whether array has lintable content
 if [[ ${#FOUND_FILES[*]} -eq 0 ]]
 then
-   echo "Found no YAML files to lint"
+   echo "Found no Python files to lint"
 else
    for VAR in "${FOUND_FILES[@]}"
    do

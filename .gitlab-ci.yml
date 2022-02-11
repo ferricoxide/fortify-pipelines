@@ -34,4 +34,22 @@ lint-shell:
     - bash scripts/ci-setup/install_pymod.sh shellcheck-py
   script:
     - bash scripts/lint-shell.sh
+
+# Liny any python-based content to ensure we don't pollute the
+# project any time we add or update python-based content
+lint-python:
+  needs:
+    - get-vars
+  before_script:
+    - bash scripts/ci-setup/install_py3.sh
+    - |-
+      #!/bin/bash
+      #
+      mapfile -t PYMODS < .gitlab-ci.pylint_mods
+      for PYMOD in "${PYMODS[@]}"
+      do
+         scripts/ci-setup/install_pymod.sh "${PYMOD}"
+      done
+  script:
+    - bash scripts/lint-python.sh
 ...

@@ -1,0 +1,38 @@
+[
+    {
+        "attributeDefinitionId": 5,
+        "value": null,
+        "values": [
+            {
+                "guid": "New"
+            }
+        ]
+    },
+    {
+        "attributeDefinitionId": 6,
+        "value": null,
+        "values": [
+            {
+                "guid": "Internal"
+            }
+        ]
+    },
+    {
+        "attributeDefinitionId": 7,
+        "value": null,
+        "values": [
+            {
+                "guid": "internalnetwork"
+            }
+        ]
+    },
+    {
+        "attributeDefinitionId": 1,
+        "value": null,
+        "values": [
+            {
+                "guid": "High"
+            }
+        ]
+    }
+]
