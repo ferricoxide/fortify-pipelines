@@ -1,10 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """
 Tool to request creation of a new version-ID for an existing project
 ("application") tracked in the Fortify Software Security Center Service
 """
 
-import argparse
 import datetime
 import json
 import os
@@ -155,6 +154,7 @@ def version_add_attrs(new_id):
     with open('stubAttrs.json', 'r', encoding="ascii") as file:
         data = json.loads(file.read().replace('\n', ''))
 
+
     # Attach attributes to new project-version
     api_response = requests.put(
       f'https://{ssc_url}/api/v1/projectVersions/{new_id}/attributes',
@@ -186,72 +186,48 @@ def version_commit(new_id):
 
 
 if __name__ == '__main__':
-    # Set up argument-parsing
-    script_opts = argparse.ArgumentParser(
-        description='Utility to create new versions for SSC projects'
-    )
-    script_opts.add_argument(
-        "-a",
-        "--project-name",
-        dest="ssc_app_name",
-        help="SSC project/application name"
-    )
-    script_opts.add_argument(
-        "-f",
-        "--ssc-fqdn",
-        dest="ssc_url",
-        help="FQDN of the SSC server"
-    )
-    script_opts.add_argument(
-        "-p",
-        "--ssc-userpass",
-        dest="ssc_user_pass",
-        help="SSC user password"
-    )
-    script_opts.add_argument(
-        "-u",
-        "--ssc-username",
-        dest="ssc_user_name",
-        help="SSC user name"
-    )
-    script_opts.add_argument(
-        "-v",
-        "--project-vers",
-        dest="ssc_app_vers",
-        help="SSC project/application version"
-    )
-
-    script_args = script_opts.parse_args()
+    # Set missing-arguments collector to 0
+    MISSING_ARGS = 0
 
     # Set name of SSC application/project
-    if script_args.ssc_app_name:
-        ssc_app_name = script_args.ssc_app_name
+    if len(os.environ.get('SSC_APP_NAME', [])) != 0:
+        ssc_app_name = os.environ.get('SSC_APP_NAME')
     else:
-        ssc_app_name = os.environ.get('SSC_APP_NAME', [])
+        MISSING_ARGS = 1
+        print("SSC_APP_NAME value not set", file=sys.stderr)
 
     # Set FQDN of SSC server
-    if script_args.ssc_url:
-        ssc_url = script_args.ssc_url
+    if len(os.environ.get('SSC_URL', [])) != 0:
+        ssc_url = os.environ.get('SSC_URL')
     else:
-        ssc_url = os.environ.get('SSC_URL', [])
+        MISSING_ARGS = 1
+        print("SSC_URL value not set", file=sys.stderr)
 
     # Set name of SSC project-user password
-    if script_args.ssc_user_pass:
-        ssc_user_pass = script_args.ssc_user_pass
+    if len(os.environ.get('SSC_USER_PASS', [])) != 0:
+        ssc_user_pass = os.environ.get('SSC_USER_PASS')
     else:
-        ssc_user_pass = os.environ.get('SSC_USER_PASS', [])
+        MISSING_ARGS = 1
+        print("SSC_USER_PASS value not set", file=sys.stderr)
 
     # Set name of SSC project-user name
-    if script_args.ssc_user_name:
-        ssc_user_name = script_args.ssc_user_name
+    if len(os.environ.get('SSC_USER_NAME', [])) != 0:
+        ssc_user_name = os.environ.get('SSC_USER_NAME')
     else:
-        ssc_user_name = os.environ.get('SSC_USER_NAME', [])
+        MISSING_ARGS = 1
+        print("SSC_USER_NAME value not set", file=sys.stderr)
 
     # Set name of SSC application/project version
-    if script_args.ssc_app_vers:
-        ssc_app_vers = script_args.ssc_app_vers
+    if len(os.environ.get('SSC_APP_VERS', [])) != 0:
+        ssc_app_vers = os.environ.get('SSC_APP_VERS')
+    elif len(os.environ.get('CI_COMMIT_BRANCH', [])) != 0:
+        ssc_app_vers = os.environ.get('CI_COMMIT_BRANCH')
     else:
-        ssc_app_vers = os.environ.get('SSC_APP_VERSION', [])
+        MISSING_ARGS = 1
+        print("SSC_APP_VERS value not set", file=sys.stderr)
+
+    if MISSING_ARGS == 1:
+        sys.exit(1)
 
     # Create UnifiedLogin token
     token_response = token_fetch()

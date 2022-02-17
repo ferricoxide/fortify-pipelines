@@ -1,0 +1,12 @@
+---
+fortify_vers-prep:
+  image:
+    name: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_VERSUTIL}
+    entrypoint: ["/usr/local/bin/create_app_version.py"]
+
+  needs:
+    - job: fortify_code-prep
+      artifacts: false
+  script:
+    - echo "Placeholder so the CI-def will pass lint"
+...

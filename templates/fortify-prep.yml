@@ -6,8 +6,8 @@ variables:
   OUTPUT_PDF: "${OUTPUT_ROOT}.pdf"
   OUTPUT_XLS: "${OUTPUT_ROOT}.xls"
 
-fortify_prep:
-  image: ${CONTAINER_REGISTRY}/${CONTAINER_SCA}
+fortify_code-prep:
+  image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}
   needs: []
   script:
     - |-

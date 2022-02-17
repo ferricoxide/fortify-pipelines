@@ -1,4 +1,4 @@
-#!/bin/bashi
+#!/bin/bash
 set -euo pipefail
 #
 # Scritpt to sweep project for YAML files and, if found,

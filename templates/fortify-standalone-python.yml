@@ -13,9 +13,9 @@ include:
     file: 'templates/fortify-prep.yml'
 
 fortify_report-pdf:
-  image: ${CONTAINER_REGISTRY}/${CONTAINER_SCA}
+  image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}
   needs:
-    - job: fortify_prep
+    - job: fortify_code-prep
       artifacts: true
   script:
     - |-

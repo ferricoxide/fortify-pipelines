@@ -1,14 +1,24 @@
 ---
 include:
   - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
-    ref: 'main'
+    ref: '${FORTIFY_CI_TEMPLATE_BRANCH}'
+    file: 'templates/fortify-ssc-version.yml'
+  - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
+    ref: '${FORTIFY_CI_TEMPLATE_BRANCH}'
     file: 'templates/fortify-prep.yml'
 
-fortify_push2ssc:
-  image: ${CONTAINER_REGISTRY}/${CONTAINER_SCA}
+fortify_code-prep:
   needs:
-    - job: fortify_prep
+    - job: fortify_vers-prep
+
+fortify_push2ssc:
+  image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}
+  needs:
+    - job: fortify_code-prep
       artifacts: true
+  variables:
+    SSC_APP_VERSION: "${SSC_APP_VERS}"
+    SSC_URL: "https://${SSC_URL}"
   script:
     - |-
       #!/bin/bash
@@ -20,7 +30,7 @@ fortify_push2ssc:
       find . -type f -print0 | xargs -0 ls -lrtd
       printf '=====\n=====\n=====\n\n'
 
-      fortifyclient -url "${SSC_URL}" -authtoken "${SSC_AUTH_TOKEN}" \
+      fortifyclient -url "${SSC_URL}" -authtoken "${SSC_TRANSFER_TOKEN}" \
         uploadFPR -file "${OUTPUT_FPR}" -project "${SSC_APP_NAME}" \
         -version "${SSC_APP_VERSION}"
   artifacts:
@@ -31,14 +41,14 @@ fortify_push2ssc:
   allow_failure: false
 
 fortify_ssc-export:
-  image: ${CONTAINER_REGISTRY}/${CONTAINER_EXPORTER}
+  image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_EXPORTER}
   needs:
     - job: fortify_push2ssc
       artifacts: false
   variables:
     export_config: /config/SSCToGitLab.yml
-    ssc_baseUrl: "${SSC_URL}"
-    ssc_authToken: "${SSC_AUTH_TOKEN}"
+    ssc_baseUrl: "https://${SSC_URL}"
+    ssc_authToken: "${SSC_TRANSFER_TOKEN}"
     ssc_version_name: "${SSC_APP_NAME}:${SSC_APP_VERSION}"
   script:
     - echo "Script not executed but required for CI-def to pass lint"
