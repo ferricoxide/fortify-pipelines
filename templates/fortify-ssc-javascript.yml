@@ -7,14 +7,14 @@ include:
     ref: '${FORTIFY_CI_TEMPLATE_BRANCH}'
     file: 'templates/fortify-prep-python.yml'
 
-fortify_code-prep_python:
+fortify_code-prep_javascript:
   needs:
     - job: fortify_vers-prep
 
 fortify_push2ssc:
   image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}
   needs:
-    - job: fortify_code-prep_python
+    - job: fortify_code-prep_javascript
       artifacts: true
   variables:
     SSC_APP_VERSION: "${SSC_APP_VERS}"

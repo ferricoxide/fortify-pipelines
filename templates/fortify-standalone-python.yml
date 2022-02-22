@@ -10,12 +10,12 @@ variables:
 include:
   - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
     ref: 'main'
-    file: 'templates/fortify-prep.yml'
+    file: 'templates/fortify-prep-python.yml'
 
 fortify_report-pdf:
   image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}
   needs:
-    - job: fortify_code-prep
+    - job: fortify_code-prep_python
       artifacts: true
   script:
     - |-
