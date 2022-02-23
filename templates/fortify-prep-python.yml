@@ -1,6 +1,6 @@
 ---
 variables:
-  OUTPUT_ROOT: "fortify-scan-results"
+  OUTPUT_ROOT: "${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
   OUTPUT_CSV: "${OUTPUT_ROOT}.csv"
   OUTPUT_FPR: "${OUTPUT_ROOT}.fpr"
   OUTPUT_PDF: "${OUTPUT_ROOT}.pdf"

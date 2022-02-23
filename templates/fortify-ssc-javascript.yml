@@ -5,7 +5,7 @@ include:
     file: 'templates/fortify-ssc-version.yml'
   - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
     ref: '${FORTIFY_CI_TEMPLATE_BRANCH}'
-    file: 'templates/fortify-prep-python.yml'
+    file: 'templates/fortify-prep-javascript.yml'
 
 fortify_code-prep_javascript:
   needs:
@@ -17,7 +17,6 @@ fortify_push2ssc:
     - job: fortify_code-prep_javascript
       artifacts: true
   variables:
-    SSC_APP_VERSION: "${SSC_APP_VERS}"
     SSC_URL: "https://${SSC_URL}"
   script:
     - |-
@@ -26,13 +25,9 @@ fortify_push2ssc:
       set -x
       PATH="/usr/local/bin:${PATH}:/opt/Fortify/bin"
 
-      echo "Print out project-files"
-      find . -type f -print0 | xargs -0 ls -lrtd
-      printf '=====\n=====\n=====\n\n'
-
       fortifyclient -url "${SSC_URL}" -authtoken "${SSC_TRANSFER_TOKEN}" \
         uploadFPR -file "${OUTPUT_FPR}" -project "${SSC_APP_NAME}" \
-        -version "${SSC_APP_VERSION}"
+        -version "${SSC_APP_VERS:-${CI_BUILD_REF_NAME}}"
   artifacts:
     # Enable download of container scanning report
     paths:
@@ -49,7 +44,7 @@ fortify_ssc-export:
     export_config: /config/SSCToGitLab.yml
     ssc_baseUrl: "https://${SSC_URL}"
     ssc_authToken: "${SSC_TRANSFER_TOKEN}"
-    ssc_version_name: "${SSC_APP_NAME}:${SSC_APP_VERSION}"
+    ssc_version_name: "${SSC_APP_NAME}:${SSC_APP_VERS:-${CI_BUILD_REF_NAME}}"
   script:
     - echo "Script not executed but required for CI-def to pass lint"
   allow_failure: true
