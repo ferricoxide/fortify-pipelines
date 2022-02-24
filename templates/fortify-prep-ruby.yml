@@ -1,0 +1,65 @@
+---
+variables:
+  OUTPUT_ROOT: "${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+  OUTPUT_CSV: "${OUTPUT_ROOT}.csv"
+  OUTPUT_FPR: "${OUTPUT_ROOT}.fpr"
+  OUTPUT_PDF: "${OUTPUT_ROOT}.pdf"
+  OUTPUT_XLS: "${OUTPUT_ROOT}.xls"
+
+fortify_code-prep_ruby:
+  image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}
+  needs: []
+  script:
+    - |-
+      #!/bin/bash
+      set -euo pipefail
+      PATH="/usr/local/bin:${PATH}:/opt/Fortify/bin"
+      SCAN_ARGS="${FORTIFY_SCAN_ARGS:-}"
+      SCAN_PATH="${FORTIFY_SCAN_PATH:-./**/*}"
+
+      # Capture analyzer version info
+      echo "Getting analyzer versions-info... "
+      sourceanalyzer -64 -version 2>&1 > >(
+        tee -a sourceanalyzer-version.log
+      ) 2> >(
+        tee -a sourceanalyzer-version.err >&2
+      ) || ( echo FAILED ; exit 1 )
+
+      # Capture installed Fortify rule-sets
+      echo "Showing installed rules... "
+      fortifyupdate -showInstalledRules > >(
+        tee -a FortifyRules.log
+      ) 2> >(
+        tee -a FortifyRules.err >&2
+      ) || ( echo FAILED ; exit 1 )
+
+      # Initialize the source analyzer and scan
+      echo "Ensure build-env is clean... "
+      sourceanalyzer -64 -b ${CI_COMMIT_REF_SLUG} -clean
+
+      echo "Translate source to scannable content"
+      sourceanalyzer --verbose -64 -b "${CI_COMMIT_REF_SLUG}" \
+        ${SCAN_ARGS} ${SCAN_PATH}
+
+      echo "Explicitly-display build-warnings... "
+      sourceanalyzer --verbose -64 -b "${CI_COMMIT_REF_SLUG}" \
+        -show-build-warnings
+
+      echo "Show files to be scanned... "
+      sourceanalyzer --verbose -64 -b "${CI_COMMIT_REF_SLUG}" -show-files
+
+      echo "Create ${OUTPUT_FPR} file... "
+      sourceanalyzer -64 -b "${CI_COMMIT_REF_SLUG}" -scan \
+        -output-file "${OUTPUT_FPR}" -debug -logfile sca.log \
+        -verbose
+  artifacts:
+    # Enable download of container scanning report
+    paths:
+      - ${OUTPUT_FPR}
+      - sca.log
+      - FortifyRules.log
+      - FortifyRules.err
+      - sourceanalyzer-version.log
+    expire_in: 1 week
+  allow_failure: false
+...
