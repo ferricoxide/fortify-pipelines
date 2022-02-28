@@ -6,7 +6,7 @@ variables:
   OUTPUT_PDF: "${OUTPUT_ROOT}.pdf"
   OUTPUT_XLS: "${OUTPUT_ROOT}.xls"
 
-fortify_code-prep_javascript:
+fortify_code-prep:
   image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}
   needs: []
   script:
@@ -14,8 +14,28 @@ fortify_code-prep_javascript:
       #!/bin/bash
       set -euo pipefail
       PATH="/usr/local/bin:${PATH}:/opt/Fortify/bin"
-      SCAN_ARGS="${FORTIFY_SCAN_ARGS:--Dcom.fortify.sca.EnableDOMModeling=true}"
+      SCAN_ARGS="${FORTIFY_SCAN_ARGS:-}"
       SCAN_PATH="${FORTIFY_SCAN_PATH:-./**/*}"
+
+      # Check for HTML in project
+      mapfile -t HAS_HTML < <(
+         find . -name "*.html" \
+           -o -name "*.htm" \
+           -o -name "*.HTML" \
+           -o -name "*.HTM"
+      )
+
+      # Alert if HTML found but not selected for scan
+      if [[ ${#HAS_HTML[@]} -ne 0 ]] &&
+         [[ ${SCAN_ARGS} != *"-Dcom.fortify.sca.EnableDOMModeling=true"* ]]
+      then
+         echo -e '\e[33m'
+         echo "*** WARNING ***"
+         echo "Found HTML files but HTML-scanning is not enabled"
+         echo "*** WARNING ***"
+         echo -e '\e[39m'
+      fi
+
 
       # Capture analyzer version info
       echo "Getting analyzer versions-info... "

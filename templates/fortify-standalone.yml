@@ -15,7 +15,7 @@ include:
 fortify_report-pdf:
   image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}
   needs:
-    - job: fortify_code-prep_python
+    - job: fortify_code-prep
       artifacts: true
   script:
     - |-
