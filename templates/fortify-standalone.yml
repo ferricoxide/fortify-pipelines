@@ -10,7 +10,7 @@ variables:
 include:
   - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
     ref: 'main'
-    file: 'templates/fortify-prep-python.yml'
+    file: 'templates/fortify-prep.yml'
 
 fortify_report-pdf:
   image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}

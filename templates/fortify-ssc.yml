@@ -5,7 +5,7 @@ include:
     file: 'templates/fortify-ssc-version.yml'
   - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
     ref: '${FORTIFY_CI_TEMPLATE_BRANCH}'
-    file: 'templates/fortify-prep-python.yml'
+    file: 'templates/fortify-prep.yml'
 
 fortify_code-prep:
   needs:
