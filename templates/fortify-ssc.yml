@@ -12,7 +12,7 @@ fortify_code-prep:
     - job: fortify_vers-prep
 
 fortify_push2ssc:
-  image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}
+  image: ${CI_REGISTRY}/${FORTIFY_CONTAINER_SCA}
   needs:
     - job: fortify_code-prep
       artifacts: true
@@ -36,7 +36,7 @@ fortify_push2ssc:
   allow_failure: false
 
 fortify_ssc-export:
-  image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_EXPORTER}
+  image: ${CI_REGISTRY}/${FORTIFY_CONTAINER_EXPORTER}
   needs:
     - job: fortify_push2ssc
       artifacts: false

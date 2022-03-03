@@ -13,7 +13,7 @@ include:
     file: 'templates/fortify-prep.yml'
 
 fortify_report-pdf:
-  image: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_SCA}
+  image: ${CI_REGISTRY}/${FORTIFY_CONTAINER_SCA}
   needs:
     - job: fortify_code-prep
       artifacts: true
