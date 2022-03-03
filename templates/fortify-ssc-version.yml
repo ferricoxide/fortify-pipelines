@@ -1,7 +1,7 @@
 ---
 fortify_vers-prep:
   image:
-    name: ${CONTAINER_REGISTRY}/${FORTIFY_CONTAINER_VERSUTIL}
+    name: ${CI_REGISTRY}/${FORTIFY_CONTAINER_VERSUTIL}
     entrypoint: ["/usr/local/bin/create_app_version.py"]
 
   needs:
