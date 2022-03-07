@@ -166,6 +166,25 @@ def version_add_attrs(new_id):
     # Extract token string from response
     return api_response.json()
 
+def kill_processing_rules(new_id):
+    """
+    Ensure that all processing-rules are disabled
+    """
+    # Generic issue-template to apply
+    with open('processingRules.json', 'r', encoding="ascii") as file:
+        data = json.loads(file.read().replace('\n', ''))
+
+    # Disable processing-rules in new project-version
+    api_response = requests.put(
+      f'https://{ssc_url}/api/v1/projectVersions/{new_id}/resultProcessingRules',
+      headers=headers_ulf,
+      json=data,
+      verify=False
+    )
+
+    # Extract token string from response
+    return api_response.json()
+
 def version_commit(new_id):
     """
     Activate the new project-version
@@ -289,6 +308,7 @@ if __name__ == '__main__':
     if version_add_template(version_id)['responseCode'] == 200:
         print(f"Successfully added standard issue-template to '{ssc_app_name}:{ssc_app_vers}'")
     else:
+        print(f"Failed to add standard issue-template to '{ssc_app_name}:{ssc_app_vers}'")
         token_nuke(token_id)
         sys.exit(1)
 
@@ -297,6 +317,15 @@ if __name__ == '__main__':
     if version_add_attrs(version_id)['responseCode'] == 200:
         print(f"Successfully added standard attributes to '{ssc_app_name}:{ssc_app_vers}'")
     else:
+        print(f"Failed to add standard attributes to '{ssc_app_name}:{ssc_app_vers}'")
+        token_nuke(token_id)
+        sys.exit(1)
+
+    # Attempt to override processing-rule
+    if kill_processing_rules(version_id)['responseCode'] == 200:
+        print(f"Successfully removed processing rull from '{ssc_app_name}:{ssc_app_vers}'")
+    else:
+        print(f"Failed removing processing-rules from '{ssc_app_name}:{ssc_app_vers}'")
         token_nuke(token_id)
         sys.exit(1)
 
@@ -304,6 +333,7 @@ if __name__ == '__main__':
     if version_commit(version_id)['responseCode'] == 200:
         print(f"Successfully committed '{ssc_app_name}:{ssc_app_vers}'")
     else:
+        print(f"Failed committing '{ssc_app_name}:{ssc_app_vers}'")
         token_nuke(token_id)
         sys.exit(1)
 

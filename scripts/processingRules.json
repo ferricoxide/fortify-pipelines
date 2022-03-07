@@ -1,0 +1,70 @@
+[
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.BuildProjectProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.ExternalListVersionProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.FileCountProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.ForceMigrationProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.FortifyAnnotationsProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.LOCCountProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.MigrationProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.NewerEngineVersionProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.QuickScanProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.RulePackVersionProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.ValidCertificationProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.WarningProcessingRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.UnknownOrDisallowedAuditedAttrChecker"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.AuditedAnalysisRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.HiddenTagAuditsAnalysisRule"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.PendingApprovalChecker"
+    },
+    {
+        "enabled": false,
+        "identifier": "com.fortify.manager.BLL.processingrules.VetoCascadingApprovalProcessingRule"
+    }
+]
