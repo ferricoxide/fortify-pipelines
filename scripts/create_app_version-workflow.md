@@ -48,7 +48,7 @@
 ~~~
   curl -sX GET "https://${SSC_FQDN}/api/v1/projectVersions/${VERSION_ID}/resultProcessingRules" \
     -H "accept: application/json" \
-    -H "Authorization: FortifyToken ODNiYTY3MjYtODFkYy00N2QzLWE4NzUtMzUxNmVkZGMyZmIx" | \
+    -H "Authorization: FortifyToken ${UNIFIED_LOGIN_TOKEN}" \
   jq --exit-status '.data[]'
 ~~~
 
