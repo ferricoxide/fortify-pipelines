@@ -1,6 +1,6 @@
 # Fortify-Integration for Service-Owners
 
-The contents of this project are provided as an `include`able, "stageless" pipeline. To facilitate [project-owners' integration tasks]() it will be necessary for the GitLab and Fortify service-owners to perform tasks within their own services.
+The contents of this project are provided as an `include`able, "stageless" pipeline. To facilitate [project-owners' integration tasks](Integration-ProjectOwners.md) it will be necessary for the GitLab and Fortify service-owners to perform tasks within their own services.
     
 ## Fortiy Service-Owner tasks
 
