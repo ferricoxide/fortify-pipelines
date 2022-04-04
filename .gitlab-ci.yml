@@ -3,7 +3,7 @@ default:
   image: ${CI_REGISTRY}/${CONTAINER_DEFAULT}
 
 variables:
-  DIND_IMAGE: ${CI_REGISTRY}/dso-millennium-falcon/docker/docker:latest
+  DIND_IMAGE: ${CI_REGISTRY}/${DIND_IMAGE}
   GIT_STRATEGY: clone
 
 # Generic "fetch the environment" task to facilitate future
@@ -48,7 +48,7 @@ lint-python:
   image: ${DIND_IMAGE}
   variables:
     IMAGE_BASE: ""
-    SRC_IMAGE_PATH: "bluefactory/docker/${IMAGE_BASE}"
+    SRC_IMAGE_PATH: "${SOURCE_IMAGE_PATH}/${IMAGE_BASE}"
     SRC_VERSTAG: "latest"
     VERSTAG: "${SRC_VERSTAG}"
   needs:
