@@ -24,6 +24,8 @@ else
    for VAR in "${FOUND_FILES[@]}"
    do
       echo "Checking ${VAR}..."
-      yamllint "${VAR}"
+      yamllint \
+        -d "{extends: relaxed, rules: {line-length: disable}}" \
+        "${VAR}"
    done
 fi
