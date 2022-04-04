@@ -1,0 +1,149 @@
+---
+variables:
+  OUTPUT_ROOT: "${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+  OUTPUT_CSV: "${OUTPUT_ROOT}.csv"
+  OUTPUT_DOC: "${OUTPUT_ROOT}.doc"
+  OUTPUT_FPR: "${OUTPUT_ROOT}.fpr"
+  OUTPUT_HTM: "${OUTPUT_ROOT}.html"
+  OUTPUT_PDF: "${OUTPUT_ROOT}.pdf"
+  OUTPUT_XLS: "${OUTPUT_ROOT}.xls"
+  FISMA_PROFILES: "NIST 800-53 Rev 5;NIST 800-53 Rev 4"
+  OWASP_PROFILES: "OWASP Top 10 2017;OWASP Top 10 2013;OWASP Top 10 2010;OWASP Top 10 2007;OWASP Top 10 2004;"
+  STIG_PROFILES: "DISA STIG 5.1;DISA STIG 4.11;DISA STIG 4.10;DISA STIG 4.8;DISA STIG 4.7;DISA STIG 4.6;DISA STIG 4.5;DISA STIG 4.4;DISA STIG 4.3;DISA STIG 4.2;DISA STIG 4.1"
+
+fortify_report-pdf:
+  image: ${CI_REGISTRY}/${FORTIFY_CONTAINER_SCA}
+  needs:
+    - job: fortify_code-prep
+      artifacts: true
+  script:
+    - |-
+      #!/bin/bash
+      set -euo pipefail
+      PATH="/usr/local/bin:${PATH}:/opt/Fortify/bin"
+      SCAN_ARGS="${FORTIFY_SCAN_ARGS:-}"
+      SCAN_PATH="${FORTIFY_SCAN_PATH:-./**/*}"
+
+      # Generate PDF-based report
+      if [[ ! -e ${OUTPUT_FPR} ]]
+      then
+         echo "FPR file missing"
+         exit 1
+      elif [[ $( zipinfo "${OUTPUT_FPR}" ) =~ *" 0 bytes uncompressed,"* ]]
+      then
+         echo "FPR file not valid"
+         exit 1
+      else
+         # Generate OWASP PDF report
+         IFS=';' read -ra PROFILE_ARRAY <<< "${OWASP_PROFILES}"
+         for PROFILE in "${PROFILE_ARRAY[@]}"
+         do
+            printf "Generating '%s' report... " "${PROFILE}"
+            BIRTReportGenerator \
+              -template "OWASP Top 10" \
+              -format PDF \
+              -source "${OUTPUT_FPR}" \
+              -output "${PROFILE}-${OUTPUT_PDF}"
+         done
+         unset PROFILE_ARRAY
+
+         # Generate STIG PDF report
+         IFS=';' read -ra PROFILE_ARRAY <<< "${STIG_PROFILES}"
+         for PROFILE in "${PROFILE_ARRAY[@]}"
+         do
+            printf "Generating '%s' report... " "${PROFILE}"
+            BIRTReportGenerator \
+              -template "DISA STIG" \
+              -format PDF \
+              -source "${OUTPUT_FPR}" \
+              -output "${PROFILE}-${OUTPUT_PDF}"
+         done
+         unset PROFILE_ARRAY
+
+         # Generate FISMA (NIST) PDF report
+         IFS=';' read -ra PROFILE_ARRAY <<< "${FISMA_PROFILES}"
+         for PROFILE in "${PROFILE_ARRAY[@]}"
+         do
+            printf "Generating '%s' report... " "${PROFILE}"
+            BIRTReportGenerator \
+              -template "FISMA Compliance" \
+              -format PDF \
+              -source "${OUTPUT_FPR}" \
+              -output "${PROFILE}-${OUTPUT_PDF}"
+         done
+      fi
+  artifacts:
+    # Enable download of container scanning report
+    paths:
+      - "./*.pdf"
+    expire_in: 1 week
+  allow_failure: true
+
+fortify_report-xls:
+  image: ${CI_REGISTRY}/${FORTIFY_CONTAINER_SCA}
+  needs:
+    - job: fortify_code-prep
+      artifacts: true
+  script:
+    - |-
+      #!/bin/bash
+      set -euo pipefail
+      PATH="/usr/local/bin:${PATH}:/opt/Fortify/bin"
+      SCAN_ARGS="${FORTIFY_SCAN_ARGS:-}"
+      SCAN_PATH="${FORTIFY_SCAN_PATH:-./**/*}"
+
+      # Generate XLS-based report
+      if [[ ! -e ${OUTPUT_FPR} ]]
+      then
+         echo "FPR file missing"
+         exit 1
+      elif [[ $( zipinfo "${OUTPUT_FPR}" ) =~ *" 0 bytes uncompressed,"* ]]
+      then
+         echo "FPR file not valid"
+         exit 1
+      else
+         # Generate OWASP XLS report
+         IFS=';' read -ra PROFILE_ARRAY <<< "${OWASP_PROFILES}"
+         for PROFILE in "${PROFILE_ARRAY[@]}"
+         do
+            printf "Generating '%s' report... " "${PROFILE}"
+            BIRTReportGenerator \
+              -template "OWASP Top 10" \
+              -format XLS \
+              -source "${OUTPUT_FPR}" \
+              -output "${PROFILE}-${OUTPUT_XLS}"
+         done
+         unset PROFILE_ARRAY
+
+         # Generate STIG XLS report
+         IFS=';' read -ra PROFILE_ARRAY <<< "${STIG_PROFILES}"
+         for PROFILE in "${PROFILE_ARRAY[@]}"
+         do
+            printf "Generating '%s' report... " "${PROFILE}"
+            BIRTReportGenerator \
+              -template "DISA STIG" \
+              -format XLS \
+              -source "${OUTPUT_FPR}" \
+              -output "${PROFILE}-${OUTPUT_XLS}"
+         done
+         unset PROFILE_ARRAY
+
+         # Generate FISMA (NIST) XLS report
+         IFS=';' read -ra PROFILE_ARRAY <<< "${FISMA_PROFILES}"
+         for PROFILE in "${PROFILE_ARRAY[@]}"
+         do
+            printf "Generating '%s' report... " "${PROFILE}"
+            BIRTReportGenerator \
+              -template "FISMA Compliance" \
+              -format XLS \
+              -source "${OUTPUT_FPR}" \
+              -output "${PROFILE}-${OUTPUT_XLS}"
+         done
+      fi
+  artifacts:
+    # Enable download of container scanning report
+    paths:
+      - "./*.xls"
+    expire_in: 1 week
+  allow_failure: true
+...

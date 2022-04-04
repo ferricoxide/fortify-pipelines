@@ -1,0 +1,22 @@
+---
+include:
+  - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
+    ref: '${FORTIFY_CI_TEMPLATE_BRANCH}'
+    file: 'templates/fortify-prep.yml'
+  - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
+    ref: '${FORTIFY_CI_TEMPLATE_BRANCH}'
+    file: 'templates/fortify-ssc-version.yml'
+  - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
+    ref: '${FORTIFY_CI_TEMPLATE_BRANCH}'
+    file: 'templates/fortify-push2ssc.yml'
+  - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
+    ref: '${FORTIFY_CI_TEMPLATE_BRANCH}'
+    file: 'templates/fortify-ssc-export.yml'
+  - project: '${FORTIFY_CI_TEMPLATE_PROJECT}'
+    ref: '${FORTIFY_CI_TEMPLATE_BRANCH}'
+    file: 'templates/fortify-report-artifacts.yml'
+
+fortify_code-prep:
+  tags:
+    - memory
+...

@@ -1,0 +1,28 @@
+---
+fortify_push2ssc:
+  image: ${CI_REGISTRY}/${FORTIFY_CONTAINER_SCA}
+  needs:
+    - job: fortify_code-prep
+      artifacts: true
+    - job: fortify_vers-prep
+      artifacts: false
+  variables:
+    SSC_URL: "https://${SSC_URL}"
+    _JAVA_OPTIONS: "-Djavax.net.ssl.trustStore=/certs/java/cacerts"
+  script:
+    - |-
+      #!/bin/bash
+      set -euo pipefail
+      set -x
+      PATH="/usr/local/bin:${PATH}:/opt/Fortify/bin"
+
+      fortifyclient -url "${SSC_URL}" -authtoken "${SSC_TRANSFER_TOKEN}" \
+        uploadFPR -file "${OUTPUT_FPR}" -project "${SSC_APP_NAME}" \
+        -version "${SSC_APP_VERS:-${CI_BUILD_REF_NAME}}"
+  artifacts:
+    # Enable download of container scanning report
+    paths:
+      - ${OUTPUT_FPR}
+    expire_in: 1 week
+  allow_failure: false
+...
