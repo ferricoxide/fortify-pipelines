@@ -82,6 +82,53 @@ def project_exists(ssc_project_name):
     # Extract token string from response
     return api_response.json()
 
+def project_create(ssc_project_name):
+    """
+    Create a generic, empty project in SSC
+    """
+    content = '{' \
+         + '    "active": true,' \
+         + '    "committed": true,' \
+         + '    "currentState": {' \
+         + '        "analysisResultsExist": false,' \
+         + '        "analysisUploadEnabled": true,' \
+         + '        "attentionRequired": false,' \
+         + '        "auditEnabled": false,' \
+         + '        "batchBugSubmissionExists": false,' \
+         + '        "committed": true,' \
+         + '        "criticalPriorityIssueCountDelta": 0,' \
+         + '        "deltaPeriod": 7,' \
+         + '        "extraMessage": null,' \
+         + '        "hasCustomIssues": false,' \
+         + '        "issueCountDelta": 0,' \
+         + '        "lastFprUploadDate": null,' \
+         + '        "metricEvaluationDate": null,' \
+         + '        "percentAuditedDelta": 0,' \
+         + '        "percentCriticalPriorityIssuesAuditedDelta": 0' \
+         + '    },' \
+         + '    "issueTemplateId": "Prioritized-HighRisk-Project-Template",' \
+         + '    "masterAttrGuid": "87f2364f-dcd4-49e6-861d-f8d3f351686b",' \
+         + '    "name": "initial",' \
+         + '    "project": {' \
+         + '        "createdBy": "GitLab-CI",' \
+         + '        "description": "CI-created Fortify SSC Project",' \
+         + '        "name": "' + ssc_project_name + '"' \
+         + '    },' \
+         + '    "snapshotOutOfDate": false' \
+         + '}'
+    data = json.loads(content)
+
+    # Submit generic application-creation request
+    api_response = requests.post(
+      f'https://{ssc_url}/api/v1/projectVersions',
+      headers=headers_ulf,
+      json=data,
+      verify=False
+    )
+
+    # Return API-response
+    return api_response.json()
+
 def get_project_versions():
     """
     Check to see if desired project-version (name) already exists
@@ -151,8 +198,29 @@ def version_add_attrs(new_id):
     Add set of generic attributes to the bare project-version
     """
     # Generic issue-template to apply
-    with open('stubAttrs.json', 'r', encoding="ascii") as file:
-        data = json.loads(file.read().replace('\n', ''))
+    content = '[' \
+            + '    {' \
+            + '        "attributeDefinitionId": 5,' \
+            + '        "value": null,' \
+            + '        "values": [ { "guid": "New" } ]' \
+            + '    },' \
+            + '    {' \
+            + '        "attributeDefinitionId": 6,' \
+            + '        "value": null,' \
+            + '        "values": [ { "guid": "Internal" } ]' \
+            + '    },' \
+            + '    {' \
+            + '        "attributeDefinitionId": 7,' \
+            + '        "value": null,' \
+            + '        "values": [ { "guid": "internalnetwork" } ]' \
+            + '    },' \
+            + '    {' \
+            + '        "attributeDefinitionId": 1,' \
+            + '        "value": null,' \
+            + '        "values": [ { "guid": "High" } ]' \
+            + '    }' \
+            + ']'
+    data = json.loads(content)
 
 
     # Attach attributes to new project-version
@@ -171,8 +239,94 @@ def kill_processing_rules(new_id):
     Ensure that all processing-rules are disabled
     """
     # Generic issue-template to apply
-    with open('processingRules.json', 'r', encoding="ascii") as file:
-        data = json.loads(file.read().replace('\n', ''))
+    content = '[' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.BuildProjectProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.ExternalListVersionProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.FileCountProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.ForceMigrationProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.FortifyAnnotationsProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.LOCCountProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.MigrationProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.NewerEngineVersionProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.QuickScanProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.RulePackVersionProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.ValidCertificationProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.WarningProcessingRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.UnknownOrDisallowedAuditedAttrChecker"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.AuditedAnalysisRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.HiddenTagAuditsAnalysisRule"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.PendingApprovalChecker"' \
+            + '    },' \
+            + '    {' \
+            + '        "enabled": false,' \
+            + '        "identifier": '\
+            + '"com.fortify.manager.BLL.processingrules.VetoCascadingApprovalProcessingRule"' \
+            + '    }' \
+            + ']'
+    data = json.loads(content)
 
     # Disable processing-rules in new project-version
     api_response = requests.put(
@@ -278,9 +432,14 @@ if __name__ == '__main__':
         project_id = project_response['data'][0]['id']
         print(f"Found SSC Group ID '{project_id}' for project-name '{ssc_app_name}'")
     else:
-        token_nuke(token_id)
-        sys.exit(1)
-
+        create_new_project = project_create(ssc_app_name)
+        if create_new_project['responseCode'] == 201:
+            project_id = create_new_project['data']['project']['id']
+            print(f"Created project-name '{ssc_app_name}' with project-ID '{project_id}'")
+        else:
+            print(f"Failed creating project-name '{ssc_app_name}'")
+            token_nuke(token_id)
+            sys.exit(1)
 
     # Check if requested project-version already exists
     if ssc_app_vers in get_project_versions():
@@ -292,6 +451,7 @@ if __name__ == '__main__':
 
 
     # Attempt to create requested project-version
+    print(f"Attempting to create '{ssc_app_vers}' for for project-name '{ssc_app_name}'")
     version_response = version_create_bare()
     if version_response['responseCode'] == 201:
         version_id = version_response['data']['id']
@@ -300,11 +460,13 @@ if __name__ == '__main__':
                      f"for project-name '{ssc_app_name}'"
         print(status_msg)
     else:
+        print(f"Failed creating version-string '{ssc_app_vers}' for project-name '{ssc_app_name}'")
         token_nuke(token_id)
         sys.exit(1)
 
 
     # Attempt to add standard issue-template to new project-version
+    print(f"Atempting to add standard issue-template to '{ssc_app_name}:{ssc_app_vers}'")
     if version_add_template(version_id)['responseCode'] == 200:
         print(f"Successfully added standard issue-template to '{ssc_app_name}:{ssc_app_vers}'")
     else:
@@ -314,6 +476,7 @@ if __name__ == '__main__':
 
 
     # Attempt to add standard attributes to new project-version
+    print(f"Atempting to add standard attributes to '{ssc_app_name}:{ssc_app_vers}'")
     if version_add_attrs(version_id)['responseCode'] == 200:
         print(f"Successfully added standard attributes to '{ssc_app_name}:{ssc_app_vers}'")
     else:
@@ -322,14 +485,16 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # Attempt to override processing-rule
+    print(f"Attempting to disable processing-rules from '{ssc_app_name}:{ssc_app_vers}'")
     if kill_processing_rules(version_id)['responseCode'] == 200:
-        print(f"Successfully removed processing rull from '{ssc_app_name}:{ssc_app_vers}'")
+        print(f"Successfully removed processing-rules from '{ssc_app_name}:{ssc_app_vers}'")
     else:
         print(f"Failed removing processing-rules from '{ssc_app_name}:{ssc_app_vers}'")
         token_nuke(token_id)
         sys.exit(1)
 
     # Attempt to commit the new project-version
+    print(f"Attempting to commit '{ssc_app_name}:{ssc_app_vers}'")
     if version_commit(version_id)['responseCode'] == 200:
         print(f"Successfully committed '{ssc_app_name}:{ssc_app_vers}'")
     else:
