@@ -3,6 +3,7 @@ default:
   image: ${CI_REGISTRY}/${CONTAINER_DEFAULT}
 
 variables:
+  DIND_IMAGE: ${CI_REGISTRY}/dso-millennium-falcon/docker/docker:latest
   GIT_STRATEGY: clone
 
 # Generic "fetch the environment" task to facilitate future
@@ -42,4 +43,69 @@ lint-python:
     - python3 -m pip install --upgrade --user -r .gitlab-ci.pylint_mods
   script:
     - bash scripts/lint-python.sh
+
+.build_base:
+  image: ${DIND_IMAGE}
+  variables:
+    IMAGE_BASE: ""
+    SRC_IMAGE_PATH: "bluefactory/docker/${IMAGE_BASE}"
+    SRC_VERSTAG: "latest"
+    VERSTAG: "${SRC_VERSTAG}"
+  needs:
+    - lint-yaml
+    - lint-shell
+    - lint-python
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: on_success
+  script:
+    - |-
+      #!/bin/bash
+
+      set -euo pipefail
+
+      docker info
+
+      docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+
+      docker build --build-arg DOCKER_REGISTRY="${CI_REGISTRY}" \
+        --build-arg DOCKER_IMAGE="${SRC_IMAGE_PATH}" \
+        --build-arg DOCKER_VERSION="${SRC_VERSTAG}" \
+        -t ${CI_REGISTRY_IMAGE}/ssc-version-util:${IMAGE_BASE}-${VERSTAG} .
+
+      docker push ${CI_REGISTRY_IMAGE}/ssc-version-util:${IMAGE_BASE}-${VERSTAG}
+
+      # Only push "latest" tag if building UBI8 image
+      if [[ ${CI_JOB_NAME} == "build_ubi8" ]]
+      then
+         printf "Adding latest tag to image... "
+         docker tag \
+           ${CI_REGISTRY_IMAGE}/ssc-version-util:${IMAGE_BASE}-${VERSTAG} \
+           ${CI_REGISTRY_IMAGE}/ssc-version-util:latest || \
+             ( echo FAILED ; exit 1 )
+         echo
+
+         printf "Pushing 'latest' tag... "
+         docker push ${CI_REGISTRY_IMAGE}/ssc-version-util:latest || \
+           ( echo FAILED ; exit 1 )
+         echo
+      else
+         echo "Job '${CI_JOB_NAME}': not adding 'latest' tag to image"
+      fi
+  tags:
+    - dind
+
+build_centos7:
+  extends:
+    - .build_base
+  variables:
+    IMAGE_BASE: "centos"
+
+build_ubi8:
+  extends:
+    - .build_base
+  variables:
+    IMAGE_BASE: "ubi8"
 ...
